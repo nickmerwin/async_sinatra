@@ -34,6 +34,10 @@ A quick example:
      EM.add_timer(n.to_i) { body { "delayed for #{n} seconds" } }
    end
 
+   aerror do |e|
+     # do something with e: airbrake, etc...
+     body e.message
+   end
  end
 
 See Sinatra::Async for more details.

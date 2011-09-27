@@ -3,7 +3,9 @@ require 'minitest/autorun'
 
 require 'eventmachine'
 
-require "sinatra/async/test"
+require 'ruby-debug'
+
+require File.join File.dirname(__FILE__), "../lib/sinatra/async/test"
 
 class TestSinatraAsync < MiniTest::Unit::TestCase
   include Sinatra::Async::Test::Methods
@@ -16,6 +18,14 @@ class TestSinatraAsync < MiniTest::Unit::TestCase
     # shouldn't need to do this!)
     def self.singletons
       @singletons ||= []
+    end
+
+    aerror do |e|
+      body e.message
+    end
+
+    aget '/error' do
+      raise 'error!'
     end
 
     error 401 do
@@ -103,13 +113,21 @@ class TestSinatraAsync < MiniTest::Unit::TestCase
   end
 
   def app
-    TestApp.new
+    TestApp
   end
 
   def assert_redirect(path)
     r = last_request.env
     uri = r['rack.url_scheme'] + '://' + r['SERVER_NAME'] + path
     assert_equal uri, last_response.location
+  end
+
+  def test_async_exception_handler
+    get '/error'
+    assert_async
+    async_continue
+    assert last_response.ok?
+    assert_equal 'error!', last_response.body
   end
 
   def test_basic_async_get

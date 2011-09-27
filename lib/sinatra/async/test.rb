@@ -1,4 +1,4 @@
-require 'sinatra/async'
+require File.join File.dirname(__FILE__), "../async"
 require 'rack/test'
 
 class Rack::MockResponse
@@ -78,7 +78,7 @@ class Sinatra::Async::Test
     # Executes the pending asynchronous blocks, required for the
     # aget/apost/etc blocks to run.
     def async_continue
-      while b = app.options.async_schedules.shift
+      while b = app.settings.async_schedules.shift
         b.call
       end
     end

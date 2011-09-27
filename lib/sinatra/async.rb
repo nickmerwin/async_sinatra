@@ -59,6 +59,10 @@ module Sinatra #:nodoc:
     # See #aget
     def aoptions(path, opts={}, &bk); aroute 'OPTIONS', path, opts, &bk; end
 
+    def aerror(&block)
+      define_method :aerror, &block
+    end
+
     private
     def aroute(verb, path, opts = {}, &block) #:nodoc:
       method = :"A#{verb} #{path} #{opts.hash}"
@@ -129,7 +133,9 @@ module Sinatra #:nodoc:
       def async_handle_exception
         yield
       rescue ::Exception => boom
-        if settings.show_exceptions?
+        if respond_to? :aerror
+          aerror boom
+        elsif settings.show_exceptions?
           printer = Sinatra::ShowExceptions.new(proc{ raise boom })
           s, h, b = printer.call(request.env)
           response.status = s
